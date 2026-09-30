@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dryvit System Calculator — Outsulation Plus MD</title>
+
+<style>
+/* ── Tokens ──────────────────────────────────────────────── */
+:root {
+  --bg:#F4F2EE; --surface:#FFFFFF; --surface-2:#ECEAE5; --border:#D8D4CC;
+  --text:#1A1F28; --text-2:#68717A; --text-3:#9BA3AC;
+  --accent:#B84530; --accent-h:#9D3827; --accent-bg:#F8EDEB;
+  --success:#1B6B37; --success-bg:#EAF4EE;
+  --warn:#7A5000; --warn-bg:#FDF2DD;
+  --radius:10px; --radius-sm:6px;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme:dark) { :root {
+  --bg:#101418; --surface:#1B2028; --surface-2:#242B35; --border:#2C3440;
+  --text:#E8E2D8; --text-2:#8A949E; --text-3:#56636E;
+  --accent:#D45840; --accent-h:#E06850; --accent-bg:#2A1A16;
+  --success:#2CA054; --success-bg:#0C1F12; --warn:#C68000; --warn-bg:#1E1500;
+  --sh:0 1px 4px rgba(0,0,0,.3),0 4px 18px rgba(0,0,0,.25);
+}}
+:root[data-theme="light"] {
+  --bg:#F4F2EE; --surface:#FFFFFF; --surface-2:#ECEAE5; --border:#D8D4CC;
+  --text:#1A1F28; --text-2:#68717A; --text-3:#9BA3AC;
+  --accent:#B84530; --accent-h:#9D3827; --accent-bg:#F8EDEB;
+  --success:#1B6B37; --success-bg:#EAF4EE; --warn:#7A5000; --warn-bg:#FDF2DD;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05);
+}
+:root[data-theme="dark"] {
+  --bg:#101418; --surface:#1B2028; --surface-2:#242B35; --border:#2C3440;
+  --text:#E8E2D8; --text-2:#8A949E; --text-3:#56636E;
+  --accent:#D45840; --accent-h:#E06850; --accent-bg:#2A1A16;
+  --success:#2CA054; --success-bg:#0C1F12; --warn:#C68000; --warn-bg:#1E1500;
+  --sh:0 1px 4px rgba(0,0,0,.3),0 4px 18px rgba(0,0,0,.25);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg); color:var(--text);
+  min-height:100vh; padding:2rem 1rem 5rem;
+  -webkit-font-smoothing:antialiased; line-height:1.5;
+}
+.wrap{max-width:1100px;margin:0 auto}
+
+/* Dashboard layout */
+.dashboard{display:flex;gap:1.5rem;align-items:flex-start}
+.left-col{flex:1;min-width:380px}
+.right-col{width:360px;flex-shrink:0;position:relative}
+.preview-box{position:sticky;top:2rem}
+.preview-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:1rem;box-shadow:var(--sh)}
+
+/* Header */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.4rem}
+.ptitle{font-family:Georgia,serif;font-size:1.6rem;font-weight:700;letter-spacing:-.02em}
+.ptitle span{color:var(--accent)}
+.theme-btn{flex-shrink:0;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:.35rem .7rem;font-size:.8rem;color:var(--text-2);cursor:pointer;margin-top:.2rem}
+.psub{font-size:.875rem;color:var(--text-2);margin-bottom:1.75rem}
+
+/* Section label */
+.slabel{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);margin-bottom:.6rem}
+.slabel.second{margin-top:1.75rem}
+
+/* Area block */
+.area-block{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:1.1rem 1.25rem;box-shadow:var(--sh);margin-bottom:1.75rem}
+.area-row{display:flex;align-items:stretch}
+.area-row input{
+  flex:1;padding:.65rem .9rem;font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;color:var(--text);background:var(--surface-2);
+  border:1.5px solid var(--border);border-right:none;
+  border-radius:var(--radius-sm) 0 0 var(--radius-sm);outline:none;font-family:inherit;
+}
+.area-row input:focus{border-color:var(--accent)}
+.area-row input::placeholder{color:var(--text-3);font-weight:400;font-size:1.1rem}
+.area-unit{padding:.65rem .9rem;background:var(--surface-2);border:1.5px solid var(--border);
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0;color:var(--text-2);font-size:.9rem;
+  font-weight:600;display:flex;align-items:center}
+.area-hint{font-size:.75rem;color:var(--text-3);margin-top:.4rem}
+.area-block.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+
+/* Steps rail */
+.steps-list{position:relative;margin-bottom:1.5rem}
+.steps-list::before{
+  content:'';position:absolute;left:12px;top:26px;bottom:26px;
+  width:2px;background:var(--border);border-radius:1px;z-index:0;
+}
+
+/* Step card */
+.step-card{
+  position:relative;background:var(--surface);
+  border:1.5px solid var(--border);border-left-width:3px;border-left-color:var(--border);
+  border-radius:var(--radius);margin-bottom:.6rem;box-shadow:var(--sh);overflow:hidden;
+  transition:border-left-color .2s;
+}
+.step-card.required{border-left-color:var(--accent)}
+.step-card.optional.is-on{border-left-color:var(--accent)}
+.step-card.has-err{border-left-color:#C0392B}
+.step-card.has-err .step-name{color:#C0392B}
+
+/* Step header */
+.step-head{display:flex;align-items:center;gap:.75rem;padding:.875rem 1.1rem .875rem 1.2rem;position:relative;z-index:1}
+.step-card.optional .step-head{cursor:pointer;user-select:none}
+.step-num{
+  width:26px;height:26px;border-radius:50%;font-size:.75rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:var(--accent);color:#fff;position:relative;z-index:1;transition:background .2s,color .2s,border .2s;
+}
+.step-card.optional:not(.is-on) .step-num{
+  background:var(--surface);color:var(--text-3);border:1.5px solid var(--border);
+}
+.step-meta{flex:1;min-width:0}
+.step-name{font-size:.95rem;font-weight:600;color:var(--text);transition:color .2s}
+.step-card.optional:not(.is-on) .step-name{color:var(--text-2)}
+.step-desc{font-size:.74rem;color:var(--text-3);margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.badge-req{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--accent);background:var(--accent-bg);padding:.2rem .45rem;border-radius:4px;white-space:nowrap}
+.badge-opt{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);white-space:nowrap}
+
+/* Toggle */
+.toggle-wrap{cursor:pointer;display:flex;align-items:center}
+.toggle-wrap input{position:absolute;opacity:0;width:0;height:0}
+.toggle-track{
+  display:block;width:38px;height:21px;background:var(--border);
+  border-radius:99px;position:relative;transition:background .2s;flex-shrink:0;
+}
+.toggle-track::after{
+  content:'';position:absolute;left:3px;top:3px;width:15px;height:15px;
+  border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s;
+}
+.toggle-wrap input:checked+.toggle-track{background:var(--accent)}
+.toggle-wrap input:checked+.toggle-track::after{transform:translateX(17px)}
+
+/* Step body */
+.step-body{padding:0 1.1rem 1.1rem 1.2rem}
+.step-body.hidden{display:none}
+.step-div{height:1px;background:var(--surface-2);margin:0 0 .9rem}
+
+/* Form controls */
+.field{margin-bottom:.65rem}
+.field:last-child{margin-bottom:0}
+.field-label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--text-3);margin-bottom:.3rem}
+select{
+  width:100%;padding:.58rem 2.2rem .58rem .8rem;font-size:.9rem;color:var(--text);
+  background:var(--surface-2);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239BA3AC' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .8rem center;
+  border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  outline:none;appearance:none;font-family:inherit;cursor:pointer;
+}
+select:focus{border-color:var(--accent)}
+select option{background:var(--surface)}
+.field.hidden{display:none}
+.step-note{margin-top:.55rem;font-size:.77rem;color:var(--text-2);
+  background:var(--surface-2);border-radius:var(--radius-sm);padding:.45rem .7rem;line-height:1.5}
+.step-note.hidden,.err-note.hidden{display:none}
+.err-note{font-size:.77rem;color:#C0392B;margin-top:.45rem;font-weight:500}
+
+/* Range slider (EPS thickness) */
+.range-row{display:flex;align-items:center;gap:.7rem;margin-top:.45rem}
+.range-row input[type=range]{flex:1;accent-color:var(--accent)}
+.range-row .range-val{font-size:.85rem;font-weight:700;color:var(--text);min-width:3.4em;text-align:right;
+  font-variant-numeric:tabular-nums}
+
+/* Drainage dual-toggle sub-items */
+.subtoggle{padding:.6rem 0;border-bottom:1px solid var(--surface-2)}
+.subtoggle:last-child{border-bottom:none}
+.subtoggle-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;cursor:pointer;user-select:none}
+.subtoggle-label{font-size:.85rem;font-weight:600;color:var(--text)}
+.subtoggle-body{margin-top:.5rem}
+.subtoggle-body.hidden{display:none}
+
+/* Multi-product rows (+ Add another product) */
+.prod-row{margin-bottom:.7rem;padding-bottom:.7rem;border-bottom:1px dashed var(--surface-2)}
+.prod-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.prod-row-head{display:flex;align-items:flex-end;gap:.5rem}
+.prod-row-head .field{flex:1;margin-bottom:0}
+.rmrow-btn{flex-shrink:0;width:2.15rem;height:2.15rem;border:1.5px solid var(--border);
+  background:var(--surface);color:var(--text-2);border-radius:var(--radius-sm);cursor:pointer;
+  font-size:1.05rem;line-height:1;font-family:inherit}
+.rmrow-btn:hover{background:var(--surface-2);color:#C0392B;border-color:#C0392B}
+.addrow-btn{display:block;width:100%;margin-top:.6rem;padding:.5rem;background:var(--surface-2);
+  border:1.5px dashed var(--border);border-radius:var(--radius-sm);color:var(--text-2);
+  font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit}
+.addrow-btn:hover{background:var(--border);color:var(--text)}
+
+/* Calc button */
+.calc-btn{
+  display:block;width:100%;padding:.9rem;background:var(--accent);color:#fff;
+  font-size:1.05rem;font-weight:700;border:none;border-radius:var(--radius-sm);
+  cursor:pointer;font-family:inherit;letter-spacing:.01em;transition:background .15s;margin-bottom:1.75rem;
+}
+.calc-btn:hover{background:var(--accent-h)}
+
+/* Results */
+.results-section.hidden{display:none}
+.res-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.7rem}
+.res-title{font-family:Georgia,serif;font-size:1.15rem;font-weight:700;color:var(--text)}
+.res-meta{font-size:.8rem;color:var(--text-2)}
+.print-btn{font-size:.8rem;padding:.35rem .75rem;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-2);cursor:pointer;font-family:inherit}
+.print-btn:hover{background:var(--surface-2)}
+.results-card{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius);box-shadow:var(--sh);overflow:hidden;margin-bottom:.75rem}
+
+/* Result rows */
+.result-row{
+  display:grid;grid-template-columns:1fr auto;gap:.5rem 1rem;align-items:start;
+  padding:1rem 1.1rem 1rem 1.25rem;border-bottom:1px solid var(--surface-2);position:relative;
+}
+.result-row:last-child{border-bottom:none}
+.result-row::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--accent);opacity:.5;
+}
+.result-row.is-var::before{background:var(--warn)}
+.res-tag{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);margin-bottom:.22rem}
+.res-prod{font-size:.95rem;font-weight:700;color:var(--text);line-height:1.3}
+.res-variant{font-size:.8rem;color:var(--text-2);margin-top:.1rem}
+.res-cov{font-size:.74rem;color:var(--text-3);margin-top:.35rem}
+.res-right{text-align:right;flex-shrink:0}
+.res-qty{font-size:2.1rem;font-weight:800;color:var(--accent);line-height:1;
+  font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.res-unit{font-size:.78rem;color:var(--text-2);margin-top:.1rem}
+.res-var{font-size:.82rem;color:var(--warn);font-weight:600;margin-top:.15rem}
+
+
+/* Print */
+@media print{
+  body{background:#fff;padding:0;color:#000}
+  .ph,.area-block,.steps-list,.calc-btn,.print-btn,.theme-btn{display:none!important}
+  .results-section.hidden{display:block!important}
+  .results-card{box-shadow:none;border:1px solid #ccc}
+  .result-row::before{background:#B84530;-webkit-print-color-adjust:exact}
+  .res-qty{color:#B84530;-webkit-print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="ph">
+    <h1 class="ptitle">Outsulation Plus MD <span>Calculator</span></h1>
+    <button class="theme-btn" id="theme-toggle">&#9788; / &#9790;</button>
+  </div>
+  <p class="psub">Configure the 9 required system components (in the same order as the Dryvit datasheet), add optional products if needed, enter the wall area, and get a material estimate.</p>
+
+  <!-- Area input -->
+  <div class="area-block" id="area-block">
+    <div class="slabel">Total Wall Area</div>
+    <div class="area-row">
+      <input type="number" id="area-inp" placeholder="e.g. 1200" min="1" step="1">
+      <div class="area-unit">sq. ft</div>
+    </div>
+    <p class="area-hint">The same area is used across all active steps.</p>
+
+    <div class="slabel" style="margin-top:1rem">Joints Length</div>
+    <div class="area-row" style="margin-bottom:0">
+      <input type="number" id="joints-inp" placeholder="auto-calculated" min="0" step="1" style="font-size:1.1rem;font-weight:700">
+      <div class="area-unit">lin. ft</div>
+    </div>
+    <p class="area-hint" id="joints-hint">Auto-calculated as 0.45 × wall area — edit to override. Only applied to a Barrier product when "Also order for joint coverage" is checked.</p>
+
+    <div class="slabel" style="margin-top:1rem">Length of Openings</div>
+    <div class="area-row" style="margin-bottom:0">
+      <input type="number" id="openings-inp" placeholder="e.g. 80" min="0" step="1" style="font-size:1.1rem;font-weight:700">
+      <div class="area-unit">lin. ft</div>
+    </div>
+    <p class="area-hint">Perimeter of windows, doors, and other openings requiring flashing. Captured for reference — not yet used in a product calculation.</p>
+  </div>
+
+  <!-- Steps -->
+  <div class="slabel">Required System Components — 9 Steps</div>
+  <div class="dashboard">
+    <div class="left-col">
+      <div class="steps-list" id="steps-list"></div>
+      <div class="slabel second">Additional Products (Optional)</div>
+      <div class="steps-list" id="additional-list"></div>
+    </div>
+    <div class="right-col">
+      <div class="preview-box">
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+    <div class="res-head">
+      <div>
+        <div class="res-title">Material Estimate</div>
+        <div class="res-meta" id="res-meta"></div>
+      </div>
+      <button class="print-btn" onclick="window.print()">Print</button>
+    </div>
+    <div class="results-card" id="results-card"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ─── Products ─────────────────────────────────────────────
+   Real coverage-rate products are unchanged from the original
+   calculator (verified against their datasheets). Products with
+   no published coverage data on file use a:null,b:null and a note
+   instead of an invented number — they render as "Ask your rep". */
+const P = [
+  {id:"genesis",     name:"Genesis®",         unit:"pail",    ud:"60 lb (27 kg) pail",
+   rates:[{l:"Adhesive + Base Coat — combined",a:140,b:140},{l:"Adhesive only",a:260,b:260},{l:"Base coat only",a:120,b:120}]},
+  {id:"primus",      name:"Primus®",           unit:"pail",    ud:"60 lb (27 kg) pail",
+   rates:[{l:null,a:110,b:110,n:"Covers adhesive and base coat in one product"}]},
+  {id:"genesis_dm",  name:"Genesis DM",             unit:"bag",     ud:"50 lb (22.7 kg) bag",
+   rates:[{l:"Adhesive + Base Coat — combined",a:55,b:55},{l:"Adhesive only",a:100,b:100},{l:"Base coat only",a:120,b:120}]},
+  {id:"genesis_dms", name:"Genesis DMS",            unit:"bag",     ud:"50 lb (22.7 kg) bag",
+   rates:[{l:"Adhesive + Base Coat — combined",a:55,b:60},{l:"Adhesive only",a:100,b:110},{l:"Base coat only",a:120,b:130}]},
+  {id:"primus_dm",   name:"Primus DM",              unit:"bag",     ud:"50 lb (22.7 kg) bag",
+   rates:[{l:"Adhesive + Base Coat — combined",a:55,b:55},{l:"Adhesive only",a:100,b:100},{l:"Base coat only",a:120,b:120}]},
+  {id:"r3550",       name:"Rapidry DM 35–50",  unit:"bag",     ud:"50 lb (22.7 kg) bag",
+   rates:[{l:"Adhesive + Base Coat — combined",a:55,b:55},{l:"Adhesive only",a:100,b:100},{l:"Base coat only",a:120,b:120}]},
+  {id:"r5075",       name:"Rapidry DM 50–75",  unit:"bag",     ud:"45 lb (20.4 kg) bag",
+   rates:[{l:"Adhesive + Base Coat — combined",a:55,b:55},{l:"Adhesive only",a:100,b:100},{l:"Base coat only",a:120,b:120}]},
+  {id:"ncb",         name:"NCB",                    unit:"pail",    ud:"65 lb (29.5 kg) pail",
+   rates:[{l:"Base coat",a:110,b:130},{l:"Grout coat",a:200,b:250}]},
+  {id:"dryflex",     name:"Dryflex",                unit:"pail",    ud:"45 lb (20 kg) pail",
+   rates:[{l:"Water-resistant adhesive",a:80,b:90},{l:"Water-resistant base coat",a:120,b:135},{l:"Hydrostatic coating (1/8 in)",a:80,b:90}]},
+  {id:"shieldit",    name:"ShieldIt",               unit:"pail",    ud:"60 lb (27.2 kg) pail",
+   rates:[{l:"1st Coat (Dark Grey)",a:120,b:130,n:"Requires Portland Cement — purchased separately"},{l:"2nd Coat (Light Grey)",a:130,b:140,n:"Requires Portland Cement — purchased separately"}]},
+  {id:"skmit",       name:"SkimIt",                 unit:"pail",    ud:"60 lb (27 kg) pail",
+   rates:[{l:null,a:350,b:350,coats:2}]},
+  // Air/Water-Resistive Barrier
+  {id:"bsntvb", name:"Backstop NT-VB", unit:"pail", ud:"5 gal (19 L) pail",
+   rates:[
+    {l:"Face — Trowel or Texture Sprayer",   g:"Gypsum Sheathing",       a:null,b:200,coats:2,n:"200 ft² max per pail (2 coats). Tape joints with Dryvit Grid Tape before applying."},
+    {l:"Face — Airless Spray",               g:"Gypsum Sheathing",       a:300, b:375,coats:2},
+    {l:"Joints — Trowel",                    g:"Gypsum Sheathing",       lf:300,      n:"Tape joints with Dryvit Grid Tape before applying. Coverage: 300 lin. ft per pail."},
+    {l:"Face — Trowel or Texture Sprayer",   g:"Fiberglass Gypsum",      a:null,b:200,coats:2,n:"200 ft² max per pail (2 coats). Includes joints."},
+    {l:"Face — Airless Spray",               g:"Fiberglass Gypsum",      a:300, b:375,coats:2},
+    {l:"Joints — Trowel",                    g:"Fiberglass Gypsum",      lf:300,      n:"Tape joints with Dryvit Grid Tape before applying. Coverage: 300 lin. ft per pail."},
+    {l:"Face — Trowel or Texture Sprayer",   g:"Plywood / Cement Board", a:null,b:200,coats:2,n:"200 ft² max per pail (2 coats)."},
+    {l:"Face — Airless Spray",               g:"Plywood / Cement Board", a:300, b:375,coats:2},
+    {l:"Joints — Trowel",                    g:"Plywood / Cement Board", lf:300,      n:"Tape joints with Dryvit Grid Tape before applying. Coverage: 300 lin. ft per pail."},
+    {l:"Face — Trowel (backrolled)",         g:"OSB",                    a:null,b:200,coats:2},
+    {l:"Face — Texture Sprayer (backrolled)",g:"OSB",                    a:null,b:200,coats:2},
+    {l:"Face — Airless Spray (backrolled)",  g:"OSB",                    a:300, b:375,coats:2},
+    {l:"Joints — Trowel",                    g:"OSB",                    lf:300,      n:"Tape joints with Dryvit Grid Tape before applying. Coverage: 300 lin. ft per pail."},
+    {l:"Face — Trowel",                      g:"Concrete / Masonry",     a:100, b:125,coats:2,n:"Test a 6×6 ft area first — coverage varies with porosity."},
+    {l:"Face — Texture Sprayer",             g:"Concrete / Masonry",     a:100, b:125,coats:2,n:"Test a 6×6 ft area first — coverage varies with porosity."},
+    {l:"Face — Airless Spray",               g:"Concrete / Masonry",     a:150, b:375,coats:2,n:"Coverage range depends on masonry porosity. Test area first."},
+   ]},
+  {id:"bsntx", name:"Backstop NTX", unit:"pail", ud:"5 gal (19 L) pail",
+   rates:[
+    {l:"Face — Texture (Trowel / Roller / Spray)", g:"Gypsum Sheathing",    a:250, b:300},
+    {l:"Face — Smooth, Roller",                    g:"Gypsum Sheathing",    a:800, b:800},
+    {l:"Face — Smooth, Airless Spray",             g:"Gypsum Sheathing",    a:500, b:600},
+    {l:"Joints — Texture, Trowel",                 g:"Gypsum Sheathing",    lf:300,      n:"Tape joints with Dryvit Grid Tape before applying. Coverage: 300 lin. ft per pail."},
+    {l:"Joints — Smooth, Trowel",                  g:"Gypsum Sheathing",    a:800, b:800},
+    {l:"Face — Texture, Trowel (incl. joints)",    g:"Fiberglass Gypsum",   a:250, b:300},
+    {l:"Face — Smooth, Roller",                    g:"Fiberglass Gypsum",   a:450, b:500},
+    {l:"Face — Smooth, Airless Spray",             g:"Fiberglass Gypsum",   a:500, b:600},
+    {l:"Joints — Texture, Trowel",                 g:"Fiberglass Gypsum",   lf:300,      n:"Tape joints with AquaFlash Mesh before applying. Coverage: 300 lin. ft per pail."},
+    {l:"Joints — Smooth, Trowel",                  g:"Fiberglass Gypsum",   a:650, b:650},
+    {l:"Face — Texture (Trowel / Roller / Spray)", g:"Plywood / Cement Board", a:250,b:300},
+    {l:"Face — Smooth, Roller",                    g:"Plywood / Cement Board", a:500,b:600},
+    {l:"Face — Smooth, Airless Spray",             g:"Plywood / Cement Board", a:500,b:600},
+    {l:"Joints — Texture, Trowel",                 g:"Plywood / Cement Board", lf:300,    n:"Coverage: 300 lin. ft per pail."},
+    {l:"Joints — Smooth, Trowel",                  g:"Plywood / Cement Board", a:650,b:650},
+    {l:"Face — Smooth, Roller",                    g:"OSB",                 a:350, b:400},
+    {l:"Face — Smooth, Airless Spray",             g:"OSB",                 a:350, b:400},
+    {l:"Joints — Texture, Trowel",                 g:"OSB",                 lf:300,      n:"Tape joints with Dryvit Grid Tape before applying. Coverage: 300 lin. ft per pail."},
+    {l:"Joints — Smooth, Trowel",                  g:"OSB",                 a:650, b:650},
+    {l:"Face — Texture, Trowel",                   g:"Concrete / Masonry",  a:200, b:250},
+    {l:"Face — Smooth, Roller or Texture Sprayer", g:"Concrete / Masonry",  a:200, b:250},
+    {l:"Face — Smooth, Airless Spray",             g:"Concrete / Masonry",  a:300, b:500},
+   ]},
+  // Flashing System
+  {id:"bff",  name:"Backstop Flash & Fill", unit:"sausage", ud:"20 oz (0.59 L) cartridge",
+   rates:[{l:null,a:15,b:17,n:"Applied at 12–15 wet mils"}]},
+  {id:"aqflash", name:"AquaFlash", unit:"container", ud:"container (8 lb or 40 lb)",
+   rates:[
+    {l:"Small container (8 lb / 3.6 kg)", n:"Linear coverage by mesh width — 4 in: 38 lf/lb; 6 in: 25 lf/lb; 9 in: 17 lf/lb"},
+    {l:"Large container (40 lb / 18.2 kg)", n:"Linear coverage by mesh width — 4 in: 38 lf/lb; 6 in: 25 lf/lb; 9 in: 17 lf/lb"},
+   ]},
+  {id:"aqflashmesh", name:"AquaFlash Mesh", unit:"roll", ud:"roll",
+   rates:[{l:null,a:null,b:null,n:"No published coverage rate on file for AquaFlash Mesh — consult your Dryvit representative."}]},
+  // Drainage (component #4 — DS445 / DS451)
+  {id:"draintrack", name:"Dryvit Drainage Track", unit:"piece", ud:"piece",
+   rates:[{l:null,a:null,b:null,n:"Per DS451, available as Starter Trac STWP, Starter Trac STDE, Universal Starter Track, or Sloped Starter Strip with Drip — length/coverage per piece varies by manufacturer. Consult your representative."}]},
+  {id:"drainstrip", name:"Dryvit Drainage Strip", unit:"roll", ud:"roll — 250 lin. ft",
+   rates:[{l:null,lf:250,n:"Packaged 6 rolls per case (1,500 lin. ft per case), per DS451."}]},
+  // Insulation
+  {id:"epsboard", name:"EPS Insulation Board", unit:"board", ud:"board",
+   rates:[{l:null,a:null,b:null,n:"No technical data sheet on file for this product — coverage depends on board thickness/density. Consult your project specs."}]},
+  // Meshes
+  {id:"spm",         name:"Standard Plus Mesh",     unit:"roll",    ud:"roll — 48 in × 150 ft",
+   rates:[{l:null,a:600,b:600,n:"Edges lapped 2½ in — order 10% extra"}]},
+  {id:"smesh",       name:"Standard Mesh",          unit:"roll",    ud:"roll",
+   rates:[{l:"48 in wide roll (600 ft²/roll)",a:600,b:600,n:"Edges lapped 2½ in — order 10% extra"},
+          {l:"72 in wide roll (900 ft²/roll)",a:900,b:900,n:"Edges lapped 2½ in — order 10% extra"}]},
+  {id:"p15",         name:"Panzer 15 Mesh",         unit:"roll",    ud:"roll — 48 in × 75 ft",
+   rates:[{l:null,a:300,b:300,n:"Edges abutted, not lapped"}]},
+  {id:"p20",         name:"Panzer 20 Mesh",         unit:"roll",    ud:"roll — 48 in × 75 ft",
+   rates:[{l:null,a:300,b:300,n:"Edges abutted, not lapped"}]},
+  {id:"dmsr",        name:"Detail Mesh Short Rolls", unit:"roll",   ud:"roll — 9½ in × 150 ft",
+   rates:[{l:null,a:119,b:119}]},
+  // Primers (optional)
+  {id:"cp",          name:"Color Prime",            unit:"pail",    ud:"50 lb (23 kg) pail",
+   rates:[{l:null,a:1500,b:1500}]},
+  {id:"cpw",         name:"Color Prime-W",          unit:"pail",    ud:"pail",
+   rates:[{l:null,a:1000,b:1500}]},
+  {id:"pws",         name:"Primer with Sand",       unit:"pail",    ud:"60 lb (27 kg) pail",
+   rates:[{l:null,a:500,b:700}]},
+  {id:"prymit",      name:"Prymit",                 unit:"pail",    ud:"40 lb (18.1 kg) pail",
+   rates:[{l:null,a:1000,b:1500}]},
+  // Finish coats — Textured Finishes
+  {id:"dpr",         name:"DPR Finish",             unit:"pail",    ud:"70 lb (32 kg) pail",
+   rates:[{l:"Quarzputz",a:140,b:140},{l:"Sandblast",a:150,b:150},{l:"Freestyle",a:null,b:null},
+          {l:"Sandpebble",a:130,b:130},{l:"Sandpebble Fine",a:160,b:160},{l:"Mojave",a:125,b:125}]},
+  {id:"mojave",      name:"Mojave",                 unit:"pail",    ud:"70 lb (32 kg) pail",
+   rates:[{l:null,a:125,b:125,n:"Available from Oklahoma and California plants only"}]},
+  {id:"pmr",         name:"PMR Finish",             unit:"pail",    ud:"70 lb pail",
+   rates:[{l:"Quarzputz PMR",a:140,b:140},{l:"Sandblast PMR",a:150,b:150},{l:"Freestyle PMR",a:null,b:null},
+          {l:"Sandpebble PMR",a:130,b:130},{l:"Sandpebble Fine PMR",a:160,b:160}]},
+  {id:"hdpfin",      name:"HDP Finish",             unit:"pail",    ud:"70 lb (32 kg) pail",
+   rates:[{l:"Quarzputz HDP",a:140,b:140},{l:"Sandblast HDP",a:150,b:150},
+          {l:"Sandpebble HDP",a:130,b:130},{l:"Sandpebble Fine HDP",a:160,b:160},{l:"Lymestone HDP",a:150,b:150}]},
+  {id:"efin",        name:"E Finish",               unit:"pail",    ud:"40 lb (18 kg) pail",
+   rates:[{l:"Sandpebble E",a:130,b:130},{l:"Sandpebble Fine E",a:160,b:160}]},
+  {id:"lymestone",   name:"Lymestone",              unit:"pail",    ud:"70 lb (32 kg) pail",
+   rates:[{l:null,a:150,b:150}]},
+  {id:"ferros",      name:"Ferros",                 unit:"pail",    ud:"5.3 qt (5 L) pail",
+   rates:[{l:"Troweled effect (1 coat)",a:105,b:155,coats:1},{l:"Dripping effect (2 coats)",a:75,b:110,coats:2}]},
+  {id:"finesse",     name:"Finesse",                unit:"pail",    ud:"60 lb (27.2 kg) pail",
+   rates:[{l:null,a:113,b:113,coats:2}]},
+  {id:"wtexfin",     name:"Weatherlastic Textured Finish", unit:"pail", ud:"pail",
+   rates:[{l:null,a:null,b:null,n:"No technical data sheet on file for this product."}]},
+  {id:"woodgrain",   name:"Woodgrain Finish",       unit:"pail",    ud:"pail",
+   rates:[{l:null,a:null,b:null,n:"No technical data sheet on file for this product."}]},
+  // Finish coats — Stone Finishes
+  {id:"stonemist",   name:"Stone Mist",             unit:"pail",    ud:"55 lb (25 kg) pail",
+   rates:[{l:null,a:75,b:75,coats:2,n:"2-coat spray application"}]},
+  {id:"terraneo",    name:"TerraNeo",               unit:"pail",    ud:"60 lb (27.2 kg) / 5 gal pail",
+   rates:[{l:null,a:95,b:100}]},
+  {id:"tiburstone",  name:"Tibur Stone",            unit:"pail",    ud:"pail",
+   rates:[{l:null,a:105,b:105,n:"Substrate smoothness and porosity may affect the actual coverage rate. Pail size not confirmed (no data sheet on file — from product comparison page)."}]},
+  // Finish coats — Specialty Finishes
+  {id:"ameristone",  name:"Ameristone",             unit:"pail",    ud:"5 gal (19 L) pail",
+   rates:[{l:null,a:55,b:65}]},
+  {id:"reflectit",   name:"Reflectit",              unit:"pail",    ud:"42 lb (18 kg) pail",
+   rates:[{l:"Roller (2 coats)",a:527,b:527,coats:2},{l:"Spray",a:904,b:904}]},
+  // Finish coats — Masonry Finishes
+  {id:"custombrick", name:"Custom Brick",           unit:"pail",    ud:"pail",
+   rates:[{l:null,a:null,b:null,n:"No technical data sheet on file for this product."}]},
+  {id:"newbrick",    name:"NewBrick",               unit:"pail",    ud:"pail",
+   rates:[{l:null,a:null,b:null,n:"No technical data sheet on file for this product."}]},
+  // Finish coats — Stains
+  {id:"tglaze",      name:"Tuscan Glaze",           unit:"pail",    ud:"35 lb (16 kg) / 5-gal pail",
+   rates:[{l:null,a:900,b:1100}]},
+  // Finish coats — Wall Coatings
+  {id:"demadv",      name:"Demandit Advantage",     unit:"pail",    ud:"5 gal (19 L) pail",
+   rates:[{l:null,a:210,b:480,coats:2}]},
+  {id:"demsm",       name:"Demandit Smooth",        unit:"pail",    ud:"5 gal (19 L) pail",
+   rates:[{l:null,a:210,b:480,coats:2}]},
+  {id:"demsd",       name:"Demandit Sanded",        unit:"pail",    ud:"5 gal (19 L) pail",
+   rates:[{l:null,a:200,b:290,coats:2}]},
+  {id:"hdpcoat",     name:"HDP Coating",            unit:"pail",    ud:"55 lb (25 kg) pail",
+   rates:[{l:null,a:200,b:450,coats:2}]},
+  {id:"wlsmooth",    name:"Weatherlastic Smooth",   unit:"pail",    ud:"5 gal (19 L) pail",
+   rates:[{l:"2 coats (min 11 mils DFT combined)",a:325,b:360,coats:2}]},
+  // Sealer (optional)
+  {id:"sealclear",   name:"SealClear",              unit:"pail",    ud:"40 lb (18 kg) pail",
+   rates:[{l:"New EIFS",a:1200,b:1600},{l:"Older / porous EIFS",a:400,b:1000},{l:"Primer before Demandit topcoat",a:800,b:1200}]},
+  // Accessories (optional)
+  {id:"gridtape",    name:"Dryvit Grid Tape",       unit:"roll",    ud:"roll",
+   rates:[{l:null,a:null,b:null,n:"Used to tape joints before applying the air/water-resistive barrier. No published coverage rate on file."}]},
+  {id:"sysacc",      name:"Dryvit Systems Accessories", unit:"item", ud:"per project take-off",
+   rates:[{l:null,a:null,b:null,n:"Bundle item covering Starter Strip, Track, and Vent Track. Quantities depend on project details — consult your representative."}]},
+];
+
+/* ─── 9 required components (site order) + 2 optional add-on
+   categories, shown as toggleable extras below them ────── */
+const STEPS = [
+  {id:"s0",num:1,name:"Accessories",
+   desc:"Grid Tape and general systems accessories",
+   req:true,
+   directQty:true,
+   pids:["gridtape","sysacc"]},
+  {id:"s1",num:2,name:"Air/Water-Resistive Barrier",
+   desc:"Applied over sheathing before EIFS layers",
+   req:true,
+   jointsFromGlobal:true,
+   pids:["bsntvb","bsntx"],
+   rateFilter:r=>!/joints/i.test(r.l||'')},
+  {id:"s2",num:3,name:"Flashing System",
+   desc:"Waterproof flashing at openings, sills, and penetrations",
+   req:true,
+   pids:["aqflash","aqflashmesh","bff"]},
+  {id:"s3",num:4,name:"Drainage",
+   desc:"Evacuates incidental moisture behind the insulation board",
+   req:true,
+   dualToggle:[
+     {pid:"draintrack",label:"Drainage Track"},
+     {pid:"drainstrip",label:"Drainage Strip"},
+   ]},
+  {id:"s4",num:5,name:"Adhesive",
+   desc:"Bonds the insulation board to the substrate",
+   req:true,
+   pids:["genesis","primus","genesis_dm","genesis_dms","primus_dm","r3550","r5075","dryflex"],
+   rateFilter:r=>/adhesive/i.test(r.l||'')&&!/combined/i.test(r.l||'')},
+  {id:"s5",num:6,name:"EPS Insulation Board",
+   desc:"Creates a layer of continuous insulation",
+   req:true,
+   epsThickness:true,
+   pids:["epsboard"]},
+  {id:"s6",num:7,name:"Base Coat",
+   desc:"Reinforced coat that embeds the mesh over the insulation",
+   req:true,
+   pids:["genesis","primus","genesis_dm","genesis_dms","primus_dm","r5075","dryflex","ncb","shieldit","skmit"],
+   rateFilter:r=>/base coat|grout/i.test(r.l||'')&&!/combined/i.test(r.l||'')},
+  {id:"s7",num:8,name:"Reinforcing Mesh",
+   desc:"Embedded in the wet base coat for impact resistance",
+   req:true,
+   groups:[
+     {label:"Standard",             pids:["spm","smesh"]},
+     {label:"Heavy-Duty / Impact",  pids:["p15","p20","dmsr"]},
+   ]},
+  {id:"s8",num:9,name:"Dryvit Finish",
+   desc:"The decorative textured, stone, or coated exterior surface",
+   req:true,
+   groups:[
+     {label:"Textured Finishes", pids:["dpr","mojave","pmr","hdpfin","efin","lymestone","ferros","finesse","wtexfin","woodgrain"]},
+     {label:"Stone Finishes",    pids:["stonemist","terraneo","tiburstone"]},
+     {label:"Specialty Finishes",pids:["ameristone","reflectit"]},
+     {label:"Masonry Finishes",  pids:["custombrick","newbrick"]},
+     {label:"Stains",            pids:["tglaze"]},
+     {label:"Wall Coatings",     pids:["demadv","demsm","demsd","hdpcoat","wlsmooth"]},
+   ]},
+  // ── Optional add-ons (not part of the 9 required components) ──
+  {id:"a1",num:'+',name:"Primer",
+   desc:"Applied over dried base coat before certain finishes",
+   req:false,def:false,
+   pids:["cp","cpw","pws","prymit"]},
+  {id:"a2",num:'+',name:"Sealer / Protective Topcoat",
+   desc:"Clear sealer applied over the finish for extra protection",
+   req:false,def:false,
+   pids:["sealclear"]},
+];
+
+const REQUIRED_IDS = new Set(["s0","s1","s2","s3","s4","s5","s6","s7","s8"]);
+
+/* ─── Helpers ───────────────────────────────────────────── */
+const byId = id => P.find(p=>p.id===id);
+function avgCov(r){
+  if(r.a!==null&&r.b!==null) return (r.a+r.b)/2;
+  return r.b??r.a??null;
+}
+function fn(n){return n.toLocaleString()}
+// Substrate group + rate label shown under the product name (e.g. "Concrete / Masonry — Face — Airless Spray").
+function variantLine(rate){
+  if(!rate) return '';
+  const parts=[rate.g,rate.l].filter(Boolean);
+  return parts.length?`<div class="res-variant">${parts.join(' — ')}</div>`:'';
+}
+function pu(n,u){const b=u.toLowerCase();const m={pail:'pail',bag:'bag',roll:'roll',sausage:'sausage'};const w=m[b]||u;return n===1?w:w+'s'}
+function isOn(s){return s.req||!!(document.getElementById('tog-'+s.id)?.checked)}
+// Sibling "Joints" rate (same substrate group, linear-ft based) for a Face rate the user picked.
+function findJointsRate(prod,group){
+  return prod.rates.find(r=>r.g===group&&/joints/i.test(r.l||'')&&r.lf);
+}
+
+/* ─── Joints Length: single top-level field, auto-calculated as
+   0.45 × wall area until the user types their own value. Only used
+   when a Barrier row's "Also order for joint coverage" is checked ── */
+let jointsDirty=false;
+const jointsInp=document.getElementById('joints-inp');
+const jointsHint=document.getElementById('joints-hint');
+function syncJointsAuto(){
+  if(jointsDirty) return;
+  const area=parseFloat(document.getElementById('area-inp').value);
+  jointsInp.value = area>0 ? Math.round(area*0.45) : '';
+}
+jointsInp.addEventListener('input',()=>{
+  jointsDirty=true;
+  jointsHint.textContent='Manually entered — no longer synced to wall area.';
+  scheduleCompute();
+});
+document.getElementById('openings-inp').addEventListener('input',()=>scheduleCompute());
+
+/* ─── One product-selection row (Product + Type/Texture + any
+   step-specific fields). Steps that allow multiple products render
+   one of these per row, plus a "+ Add another product" button. ── */
+function buildProductRowHtml(s,rid,removable){
+  const optsHtml = s.groups
+    ? s.groups.map(g=>{
+        const gp=P.filter(p=>g.pids.includes(p.id));
+        if(!gp.length) return '';
+        return `<optgroup label="${g.label}">${gp.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</optgroup>`;
+      }).join('')
+    : P.filter(p=>s.pids.includes(p.id)).map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  return `
+    <div class="prod-row" id="row-${rid}">
+      <div class="prod-row-head">
+        <div class="field">
+          <label class="field-label" for="prod-${rid}">Product</label>
+          <select id="prod-${rid}" data-step="${s.id}" data-row="${rid}">
+            <option value="">— Choose a product —</option>
+            ${optsHtml}
+          </select>
+        </div>
+        ${removable?`<button type="button" class="rmrow-btn" id="rmrow-${rid}" data-row="${rid}" title="Remove this product">×</button>`:''}
+      </div>
+      <div class="field hidden" id="rw-${rid}">
+        <label class="field-label" for="rate-${rid}">Type / Texture</label>
+        <select id="rate-${rid}"></select>
+      </div>
+      ${s.directQty?`
+      <div class="field hidden" id="qtyw-${rid}">
+        <label class="field-label" for="qty-${rid}">Quantity</label>
+        <input type="number" id="qty-${rid}" placeholder="e.g. 10" min="1" step="1"
+          style="width:100%;padding:.58rem .8rem;font-size:.9rem;color:var(--text);background:var(--surface-2);
+          border:1.5px solid var(--border);border-radius:var(--radius-sm);outline:none;font-family:inherit">
+        <p class="area-hint">No published coverage rate for this product — enter the number of units to order directly.</p>
+      </div>`:''}
+      ${s.epsThickness?`
+      <div class="field hidden" id="thickw-${rid}">
+        <label class="field-label" for="thick-${rid}">Board Thickness</label>
+        <div class="area-row" style="margin-bottom:0">
+          <input type="number" id="thick-${rid}" placeholder="e.g. 2" min="0" max="12" step="0.5" style="font-size:.95rem;font-weight:600;letter-spacing:0">
+          <div class="area-unit">in</div>
+        </div>
+        <div class="range-row">
+          <input type="range" id="thickr-${rid}" min="0" max="12" step="0.5" value="0">
+          <span class="range-val" id="thickv-${rid}">0 in</span>
+        </div>
+        <p class="area-hint">Bundles = wall area ÷ 144 × thickness (in).</p>
+      </div>`:''}
+      ${s.jointsFromGlobal?`
+      <div class="field hidden" id="jointswrap-${rid}">
+        <label class="toggle-wrap">
+          <input type="checkbox" id="jointstog-${rid}">
+          <span class="toggle-track"></span>
+          <span style="margin-left:.6rem;font-size:.82rem;font-weight:600;color:var(--text)">Also order for joint coverage</span>
+        </label>
+        <p class="area-hint">Uses the Joints Length entered above.</p>
+      </div>`:''}
+      <div class="step-note hidden" id="note-${rid}"></div>
+      <div class="err-note hidden" id="err-${rid}"></div>
+    </div>`;
+}
+
+// Tracks how many rows have ever been added per step, so new row ids stay unique.
+const rowCounters={};
+function addProductRow(sid){
+  const step=STEPS.find(x=>x.id===sid);
+  if(!step) return;
+  rowCounters[sid]=(rowCounters[sid]||1)+1;
+  const rid=sid+'_'+rowCounters[sid];
+  const rowsEl=document.getElementById('rows-'+sid);
+  const wrap=document.createElement('div');
+  wrap.innerHTML=buildProductRowHtml(step,rid,true);
+  rowsEl.appendChild(wrap.firstElementChild);
+  scheduleCompute();
+}
+function removeProductRow(rid){
+  document.getElementById('row-'+rid)?.remove();
+  scheduleCompute();
+}
+
+/* ─── Build cards ───────────────────────────────────────── */
+function buildSteps(){
+  const reqList=document.getElementById('steps-list');
+  const addList=document.getElementById('additional-list');
+  STEPS.forEach(s=>{
+    const on=s.req||s.def;
+    const card=document.createElement('div');
+    card.id='card-'+s.id;
+    card.className='step-card '+(s.req?'required':'optional'+(s.def?' is-on':''));
+
+    // Drainage: two independent toggles, no product dropdown at all.
+    if(s.dualToggle){
+      const subHtml=s.dualToggle.map(d=>{
+        const prod=byId(d.pid);
+        return `
+        <div class="subtoggle">
+          <div class="subtoggle-head" id="dhead-${d.pid}">
+            <span class="subtoggle-label">${d.label}</span>
+            <label class="toggle-wrap">
+              <input type="checkbox" id="dtog-${d.pid}">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="subtoggle-body hidden" id="dbody-${d.pid}">
+            <div class="area-row" style="margin-bottom:0">
+              <input type="number" id="dtlen-${d.pid}" placeholder="e.g. 200" min="1" step="1" style="font-size:.95rem;font-weight:600;letter-spacing:0">
+              <div class="area-unit">lin. ft</div>
+            </div>
+            <p class="area-hint">${prod.ud}${prod.rates[0]?.n?' · '+prod.rates[0].n:''}</p>
+          </div>
+        </div>`;
+      }).join('');
+      card.innerHTML=`
+        <div class="step-head">
+          <div class="step-num">${s.num}</div>
+          <div class="step-meta">
+            <div class="step-name">${s.name}</div>
+            <div class="step-desc">${s.desc}</div>
+          </div>
+          <div class="step-right"><span class="badge-req">Required</span></div>
+        </div>
+        <div class="step-body" id="body-${s.id}">
+          <div class="step-div"></div>
+          <p class="area-hint" style="margin:0 0 .3rem">Neither is mandatory — turn on whichever apply to this project.</p>
+          ${subHtml}
+          <div class="err-note hidden" id="err-${s.id}"></div>
+        </div>`;
+      reqList.appendChild(card);
+      return;
+    }
+
+    card.className='step-card '+(s.req?'required':'optional'+(s.def?' is-on':''));
+    const firstRowHtml=buildProductRowHtml(s,s.id,false);
+    const addBtnHtml=s.directQty?'':`<button type="button" class="addrow-btn" id="addrow-${s.id}">+ Add another product</button>`;
+    card.innerHTML=`
+      <div class="step-head" id="head-${s.id}">
+        <div class="step-num">${s.num}</div>
+        <div class="step-meta">
+          <div class="step-name">${s.name}</div>
+          <div class="step-desc">${s.desc}</div>
+        </div>
+        <div class="step-right">
+          ${s.req
+            ?'<span class="badge-req">Required</span>'
+            :`<span class="badge-opt">Optional</span>
+              <label class="toggle-wrap">
+                <input type="checkbox" id="tog-${s.id}"${s.def?' checked':''}>
+                <span class="toggle-track"></span>
+              </label>`
+          }
+        </div>
+      </div>
+      <div class="step-body${on?'':' hidden'}" id="body-${s.id}">
+        <div class="step-div"></div>
+        <div class="prod-rows" id="rows-${s.id}">${firstRowHtml}</div>
+        ${addBtnHtml}
+      </div>`;
+    (REQUIRED_IDS.has(s.id)?reqList:addList).appendChild(card);
+  });
+}
+
+/* ─── Events ────────────────────────────────────────────── */
+function wireList(listEl){
+  listEl.addEventListener('click',e=>{
+    // Add / remove a product row within a step.
+    const addBtn=e.target.closest('.addrow-btn');
+    if(addBtn){ addProductRow(addBtn.id.replace('addrow-','')); return; }
+    const rmBtn=e.target.closest('.rmrow-btn');
+    if(rmBtn){ removeProductRow(rmBtn.dataset.row); return; }
+
+    // Drainage sub-toggle (Track / Strip) — click anywhere on its head.
+    const dhead=e.target.closest('.subtoggle-head');
+    if(dhead){
+      if(e.target.closest('label.toggle-wrap')) return;
+      const pid=dhead.id.replace('dhead-','');
+      const tog=document.getElementById('dtog-'+pid);
+      if(tog){ tog.checked=!tog.checked; tog.dispatchEvent(new Event('change',{bubbles:true})); }
+      return;
+    }
+    const head=e.target.closest('.step-head');
+    if(!head) return;
+    const card=head.closest('.step-card.optional');
+    if(!card) return;
+    const sid=card.id.replace('card-','');
+    if(e.target.closest('label.toggle-wrap')||e.target.tagName==='INPUT') return;
+    const tog=document.getElementById('tog-'+sid);
+    if(!tog) return;
+    tog.checked=!tog.checked;
+    tog.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+
+  listEl.addEventListener('change',e=>{
+    // "Also order for joint coverage" checkbox on a Barrier row
+    if(e.target.matches('input[id^="jointstog-"]')){
+      scheduleCompute();
+      return;
+    }
+    // Drainage sub-toggle checkbox
+    if(e.target.matches('input[id^="dtog-"]')){
+      const pid=e.target.id.replace('dtog-','');
+      const body=document.getElementById('dbody-'+pid);
+      if(e.target.checked){ body.classList.remove('hidden'); }
+      else{ body.classList.add('hidden'); const len=document.getElementById('dtlen-'+pid); if(len) len.value=''; }
+      scheduleCompute();
+      return;
+    }
+    if(e.target.matches('input[type="checkbox"]')){
+      const sid=e.target.id.replace('tog-','');
+      const card=document.getElementById('card-'+sid);
+      const body=document.getElementById('body-'+sid);
+      if(e.target.checked){
+        card.classList.add('is-on');
+        body.classList.remove('hidden');
+      } else {
+        card.classList.remove('is-on');
+        body.classList.add('hidden');
+        // Reset every row for this step: drop any added rows, blank the first.
+        const rows=Array.from(document.querySelectorAll('#rows-'+sid+' .prod-row'));
+        rows.forEach((rowEl,idx)=>{
+          if(idx===0){
+            const prodSel=rowEl.querySelector('select[data-step]');
+            if(prodSel){ prodSel.value=''; onProd(prodSel); }
+          } else {
+            rowEl.remove();
+          }
+        });
+      }
+      scheduleCompute();
+    }
+    if(e.target.matches('select[data-step]')){ onProd(e.target); scheduleCompute(); }
+    if(e.target.matches('select[id^="rate-"]')){
+      const sid=e.target.id.replace('rate-','');
+      updateNoteAndLinft(sid); scheduleCompute();
+    }
+  });
+
+  listEl.addEventListener('input', e=>{
+    if(e.target.matches('input[id^="dtlen-"]')) scheduleCompute();
+    if(e.target.matches('input[id^="qty-"]')) scheduleCompute();
+    if(e.target.matches('input[id^="thick-"]')){
+      const sid=e.target.id.replace('thick-','');
+      const r=document.getElementById('thickr-'+sid);
+      const v=document.getElementById('thickv-'+sid);
+      const val=Math.max(0,Math.min(12,parseFloat(e.target.value)||0));
+      if(r) r.value=val;
+      if(v) v.textContent=val+' in';
+      scheduleCompute();
+    }
+    if(e.target.matches('input[id^="thickr-"]')){
+      const sid=e.target.id.replace('thickr-','');
+      const t=document.getElementById('thick-'+sid);
+      const v=document.getElementById('thickv-'+sid);
+      if(t) t.value=e.target.value;
+      if(v) v.textContent=e.target.value+' in';
+      scheduleCompute();
+    }
+  });
+}
+wireList(document.getElementById('steps-list'));
+wireList(document.getElementById('additional-list'));
+
+// Area input triggers live calc (and re-syncs the auto-calculated joints length)
+document.getElementById('area-inp').addEventListener('input',()=>{syncJointsAuto();scheduleCompute()});
+
+function buildRateSel(rSel,prod,filterFn){
+  let entries=prod.rates.map((r,i)=>({r,i}));
+  if(filterFn){
+    const filtered=entries.filter(({r})=>filterFn(r));
+    if(filtered.length) entries=filtered;
+  }
+  const order=[],gmap={};
+  entries.forEach(({r,i})=>{
+    const g=r.g||'';
+    if(!gmap[g]){gmap[g]=[];order.push(g)}
+    gmap[g].push({r,i});
+  });
+  const hasGroups=order.some(g=>g!=='');
+  rSel.innerHTML=order.map(g=>{
+    const opts=gmap[g].map(({r,i})=>`<option value="${i}">${r.l||'Standard'}${r.lf?' → lin. ft':''}</option>`).join('');
+    return hasGroups&&g?`<optgroup label="${g}">${opts}</optgroup>`:opts;
+  }).join('');
+}
+
+function onProd(sel){
+  const sid=sel.dataset.step;
+  const rid=sel.dataset.row||sid;
+  const step=STEPS.find(x=>x.id===sid);
+  const pid=sel.value;
+  const rw=document.getElementById('rw-'+rid);
+  const rSel=document.getElementById('rate-'+rid);
+  const errEl=document.getElementById('err-'+rid);
+  errEl?.classList.add('hidden'); if(errEl) errEl.textContent='';
+  document.getElementById('card-'+sid)?.classList.remove('has-err');
+  const qtyWrap=document.getElementById('qtyw-'+rid);
+  const thickWrap=document.getElementById('thickw-'+rid);
+  const jointsWrap=document.getElementById('jointswrap-'+rid);
+  if(!pid){
+    rw?.classList.add('hidden');
+    qtyWrap?.classList.add('hidden');
+    thickWrap?.classList.add('hidden');
+    jointsWrap?.classList.add('hidden');
+    document.getElementById('note-'+rid)?.classList.add('hidden');
+    return;
+  }
+  const prod=byId(pid);
+  const hasLabels=prod.rates.length>1||prod.rates[0]?.l;
+  if(hasLabels&&prod.rates.some(r=>r.l)){
+    buildRateSel(rSel,prod,step?.rateFilter);
+    rw?.classList.remove('hidden');
+  } else {
+    rw?.classList.add('hidden');
+  }
+  if(step?.directQty) qtyWrap?.classList.remove('hidden');
+  if(step?.epsThickness) thickWrap?.classList.remove('hidden');
+  if(step?.jointsFromGlobal) jointsWrap?.classList.remove('hidden');
+  updateNoteAndLinft(rid);
+}
+
+function updateNoteAndLinft(rid){
+  const prodSel=document.getElementById('prod-'+rid);
+  if(!prodSel?.value) return;
+  const prod=byId(prodSel.value);
+  const rwEl=document.getElementById('rw-'+rid);
+  const hidden=rwEl?.classList.contains('hidden');
+  const ri=hidden?0:parseInt(document.getElementById('rate-'+rid)?.value||'0',10);
+  const rate=prod.rates[ri];
+  const noteEl=document.getElementById('note-'+rid);
+  if(rate?.n){noteEl.textContent='📌 '+rate.n;noteEl.classList.remove('hidden')}
+  else{noteEl?.classList.add('hidden')}
+}
+
+/* ─── Live calculation (auto-run on changes) ────────────── */
+let computeTimer=null;
+function scheduleCompute(ms=180){
+  if(computeTimer) clearTimeout(computeTimer);
+  computeTimer=setTimeout(()=>{computeTimer=null;computeAndRender()},ms);
+}
+
+function computeAndRender(){
+  STEPS.forEach(s=>{
+    document.getElementById('card-'+s.id)?.classList.remove('has-err');
+    const e=document.getElementById('err-'+s.id);
+    if(e){e.textContent='';e.classList.add('hidden')}
+  });
+  const area=parseFloat(document.getElementById('area-inp').value);
+  if(!area||area<=0){
+    const ab=document.getElementById('area-block');
+    ab.classList.add('shake');
+    ab.addEventListener('animationend',()=>ab.classList.remove('shake'),{once:true});
+    document.getElementById('area-inp').focus();
+    document.getElementById('results-card').innerHTML = '<div style="padding:1rem;color:var(--text-2)">Enter a valid total wall area to see live estimates.</div>';
+    document.getElementById('res-meta').textContent='';
+    return;
+  }
+  const openingsLen=parseFloat(document.getElementById('openings-inp').value)||0;
+
+  const items=[];let hasErr=false;
+  STEPS.forEach(s=>{
+    if(!isOn(s)) return;
+
+    // Drainage — Track and Strip are two independent optional sub-items.
+    if(s.dualToggle){
+      s.dualToggle.forEach(d=>{
+        const tog=document.getElementById('dtog-'+d.pid);
+        if(!tog?.checked) return;
+        const lenInp=document.getElementById('dtlen-'+d.pid);
+        const lenVal=parseFloat(lenInp?.value);
+        if(!lenVal||lenVal<=0){
+          document.getElementById('card-'+s.id)?.classList.add('has-err');
+          const e=document.getElementById('err-'+s.id);
+          if(e){e.textContent='Enter a length for each enabled drainage item.';e.classList.remove('hidden')}
+          hasErr=true; return;
+        }
+        items.push({s,prod:byId(d.pid),rate:byId(d.pid).rates[0],lfVal:lenVal,label:d.label});
+      });
+      return;
+    }
+
+    // Accessories — single row, direct manual quantity, no coverage math.
+    if(s.directQty){
+      const pSel=document.getElementById('prod-'+s.id);
+      if(!pSel?.value){
+        document.getElementById('card-'+s.id)?.classList.add('has-err');
+        const e=document.getElementById('err-'+s.id);
+        if(e){e.textContent='Please choose a product for this step.';e.classList.remove('hidden')}
+        hasErr=true; return;
+      }
+      const qtyVal=parseFloat(document.getElementById('qty-'+s.id)?.value);
+      if(!qtyVal||qtyVal<=0){
+        document.getElementById('card-'+s.id)?.classList.add('has-err');
+        const e=document.getElementById('err-'+s.id);
+        if(e){e.textContent='Please enter a quantity.';e.classList.remove('hidden')}
+        hasErr=true; return;
+      }
+      items.push({s,prod:byId(pSel.value),directQty:qtyVal});
+      return;
+    }
+
+    // Every other step allows one or more product rows (+ Add another product).
+    const rowSelects=Array.from(document.querySelectorAll('select[data-step="'+s.id+'"]'));
+    let anyValid=false;
+    rowSelects.forEach(pSel=>{
+      if(!pSel.value) return; // an added row left blank — skip quietly, not an error
+      anyValid=true;
+      const rid=pSel.dataset.row||s.id;
+      const prod=byId(pSel.value);
+
+      // EPS Insulation Board — thickness-driven bundle count, per row.
+      if(s.epsThickness){
+        const thickVal=parseFloat(document.getElementById('thick-'+rid)?.value);
+        if(!thickVal||thickVal<=0){
+          document.getElementById('card-'+s.id)?.classList.add('has-err');
+          const e=document.getElementById('err-'+rid);
+          if(e){e.textContent='Please enter the insulation board thickness.';e.classList.remove('hidden')}
+          hasErr=true; return;
+        }
+        items.push({s,prod,epsQty:Math.ceil((area/144)*thickVal),thickVal});
+        return;
+      }
+
+      const rw=document.getElementById('rw-'+rid);
+      const hidden=rw?.classList.contains('hidden');
+      const ri=hidden?0:parseInt(document.getElementById('rate-'+rid)?.value||'0',10);
+      const rate=prod.rates[ri];
+      items.push({s,prod,rate,area});
+
+      // Air/Water-Resistive Barrier — opt-in Joints line, using the top-level
+      // Joints Length field, only if the user checked the box on this row.
+      if(s.jointsFromGlobal&&rate?.g){
+        const jtog=document.getElementById('jointstog-'+rid);
+        if(jtog?.checked){
+          const jLen=parseFloat(document.getElementById('joints-inp')?.value);
+          if(jLen>0){
+            const jr=findJointsRate(prod,rate.g);
+            if(jr) items.push({s,prod,rate:jr,lfVal:jLen,label:'Joints ('+rate.g+')'});
+          }
+        }
+      }
+    });
+    if(!anyValid){
+      document.getElementById('card-'+s.id)?.classList.add('has-err');
+      const e=document.getElementById('err-'+s.id);
+      if(e){e.textContent='Please choose a product for this step.';e.classList.remove('hidden')}
+      hasErr=true;
+    }
+  });
+  if(hasErr){
+    if(items.length>0) render(items,area,openingsLen);
+    return;
+  }
+  render(items,area,openingsLen);
+}
+
+/* ─── Render results ────────────────────────────────────── */
+function render(items,globalArea,openingsLen){
+  const card=document.getElementById('results-card');
+  card.innerHTML='';
+  const area=globalArea;
+  items.forEach(({s,prod,rate,lfVal,area:itemArea,directQty,epsQty,thickVal,label})=>{
+    const row=document.createElement('div');
+    const tag=label?`Step ${s.num} · ${label}`:`Step ${s.num} · ${s.name}`;
+
+    // Accessories — direct manual quantity, no coverage rate involved.
+    if(directQty!=null){
+      row.className='result-row';
+      row.innerHTML=`
+        <div>
+          <div class="res-tag">${tag}</div>
+          <div class="res-prod">${prod.name}</div>
+          <div class="res-cov">Manually entered quantity · ${prod.ud}</div>
+        </div>
+        <div class="res-right">
+          <div class="res-qty">${fn(directQty)}</div>
+          <div class="res-unit">${pu(directQty,prod.unit)}</div>
+        </div>`;
+      card.appendChild(row);
+      return;
+    }
+
+    // EPS Insulation Board — thickness-driven bundle count.
+    if(epsQty!=null){
+      row.className='result-row';
+      row.innerHTML=`
+        <div>
+          <div class="res-tag">${tag}</div>
+          <div class="res-prod">${prod.name}</div>
+          <div class="res-cov">${fn(thickVal)} in thickness · wall area ÷ 144 × thickness</div>
+        </div>
+        <div class="res-right">
+          <div class="res-qty">${fn(epsQty)}</div>
+          <div class="res-unit">${pu(epsQty,prod.unit)}</div>
+        </div>`;
+      card.appendChild(row);
+      return;
+    }
+
+    // Linear-ft items: auto Joints line, and Drainage Track/Strip.
+    if(lfVal!=null){
+      if(!rate?.lf){
+        // No published per-unit length on file (e.g. Drainage Track) — show what was entered.
+        row.className='result-row is-var';
+        row.innerHTML=`
+          <div>
+            <div class="res-tag">${tag}</div>
+            <div class="res-prod">${prod.name}</div>
+            <div class="res-cov">${fn(lfVal)} lin. ft entered</div>
+          </div>
+          <div class="res-right">
+            <div class="res-var">Ask your rep</div>
+            <div class="res-unit" style="color:var(--warn)">Variable coverage</div>
+          </div>`;
+        card.appendChild(row);
+        return;
+      }
+      const units=Math.ceil(lfVal/rate.lf);
+      row.className='result-row';
+      row.innerHTML=`
+        <div>
+          <div class="res-tag">${tag}</div>
+          <div class="res-prod">${prod.name}</div>
+          ${variantLine(rate)}
+          <div class="res-cov">${fn(rate.lf)} lin. ft per ${prod.unit} · ${prod.ud}</div>
+        </div>
+        <div class="res-right">
+          <div class="res-qty">${fn(units)}</div>
+          <div class="res-unit">${pu(units,prod.unit)}</div>
+        </div>`;
+      card.appendChild(row);
+      return;
+    }
+
+    const cov=avgCov(rate);
+    if(!cov){
+      row.className='result-row is-var';
+      row.innerHTML=`
+        <div>
+          <div class="res-tag">${tag}</div>
+          <div class="res-prod">${prod.name}</div>
+          ${variantLine(rate)}
+        </div>
+        <div class="res-right">
+          <div class="res-var">Ask your rep</div>
+          <div class="res-unit" style="color:var(--warn)">Variable coverage</div>
+        </div>`;
+    } else {
+      const units=Math.ceil(itemArea/cov);
+      const covMin=rate.a??rate.b, covMax=rate.b??rate.a;
+      const covLbl=covMin===covMax?`${fn(covMin)} sq. ft per ${prod.unit}`:rate.a===null?`up to ${fn(covMax)} sq. ft per ${prod.unit}`:`${fn(covMin)}–${fn(covMax)} sq. ft per ${prod.unit}`;
+      row.className='result-row';
+      row.innerHTML=`
+        <div>
+          <div class="res-tag">${tag}</div>
+          <div class="res-prod">${prod.name}</div>
+          ${variantLine(rate)}
+          <div class="res-cov">${covLbl} · ${prod.ud}</div>
+        </div>
+        <div class="res-right">
+          <div class="res-qty">${fn(units)}</div>
+          <div class="res-unit">${pu(units,prod.unit)}</div>
+        </div>`;
+    }
+    card.appendChild(row);
+  });
+  const openingsNote = openingsLen>0 ? ` · ${fn(openingsLen)} lin. ft openings entered` : '';
+  document.getElementById('res-meta').textContent=`${fn(area)} sq. ft · ${items.length} active step${items.length!==1?'s':''}${openingsNote}`;
+}
+
+/* ─── Theme toggle ──────────────────────────────────────── */
+document.getElementById('theme-toggle').addEventListener('click',()=>{
+  const r=document.documentElement;
+  const c=r.getAttribute('data-theme');
+  const dark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  r.setAttribute('data-theme',c==='dark'?'light':c==='light'?'dark':dark?'light':'dark');
+});
+
+const _printBtn = document.querySelector('.print-btn');
+if(_printBtn) _printBtn.addEventListener('click', ()=> window.print());
+
+buildSteps();
+scheduleCompute(0);
+</script>
+
+</body>
+</html>
