@@ -1,9 +1,9 @@
 ﻿
-# Dryvit Outsulation Plus MD — Material Calculator
+# Dryvit Outsulation Plus MD : Material Calculator
 
 A self-contained HTML/JS calculator that estimates material quantities for
 Dryvit's Outsulation Plus MD EIFS wall system. No build step, no
-dependencies — open any version directly in a browser.
+dependencies , open any version directly in a browser.
 
 ## What it does
 
@@ -26,14 +26,14 @@ based on that product's published coverage rate.
 
 ## Usage
 
-Open the relevant `.html` file directly in any browser — everything
+Open the relevant `.html` file directly in any browser, everything
 (product data, calculation logic, styling) is embedded in the single file.
 No server, no npm install required.
 
 
 ## Known limitations
 
-- Single-system prototype (Outsulation Plus MD only) — not yet generalized
+- Single-system prototype (Outsulation Plus MD only) , not yet generalized
   to other Dryvit systems.
 - Product coverage data is hand-maintained in this file; it is not
   auto-generated from any external catalog, so it can drift out of sync
